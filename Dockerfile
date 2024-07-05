@@ -1,11 +1,16 @@
-   # 使用官方的Nginx基础镜像
-   FROM nginx:latest
+# 第一阶段，构建应用
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY . .
+RUN npm install
+RUN npm run  build
 
-   # 维护者信息（可选）
-   LABEL maintainer="your-email@example.com"
+#第二阶段，构建镜像
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=build  /app .
+# 暴露Nginx的默认端口
+EXPOSE 3000
 
-   # 将自定义的HTML文件复制到Nginx的默认HTML目录
-   #COPY index.html /usr/share/nginx/html/index.html
-
-   # 暴露Nginx的默认端口
-   EXPOSE 80
+# 定义容器启动命令
+CMD ["npm", "run", "start"]
